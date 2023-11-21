@@ -17,6 +17,7 @@ The current implementation of the server is single-threaded. This means that eac
 To solve this problem, implement a multithreaded approach to allow the server to handle multiple client connections concurrently. You will need to detail your strategy (classes used, when a new thread is created, when it is started, what task does each thread handle) in the report.
 To evaluate you, we might create thousands of clients, your server should support them.
 
+
 #### Fund Transfer Functionality:
 
 Extend the server to handle fund transfers between accounts. Clients should be able to submit the form with details such as source account, source value, destination account, and destination value. The server should accurately process these transfers while maintaining data integrity. For this, once the server is initialized, you should create the accounts provided in simple file in which each line represents an account as in the following example:
@@ -26,18 +27,23 @@ Account id, balance
 321, 5000 
 432, 2000
 
+
 #### Synchronization and Deadlock Prevention
 
 As you implement multithreading, it's crucial to be aware of synchronization issues. When multiple threads access shared data concurrently, it can lead to race conditions and data corruption. Identify critical sections in your code where synchronization is required to prevent such issues. Additionally, analyze the code for potential deadlock scenarios and implement strategies to prevent and handle them.
 Analyze the code for potential deadlock situations, especially when handling transfers, and implement strategies to prevent and handle such scenarios.
 You may use Java’s synchronization tools except the synchronized keyword.
 
+
 ### Deliverables:
 
 All deliverables are submitted via Moodle. You should submit two files: a zip file of the code and a pdf file of the report. File names should be in the format <SID1>_<SID2>_assignment2_<type>
 Where SID corresponds to the student id of each member of the group and type is either code of report.
 
+
 #### Multithreaded Web Server Code: 
 Provide a Java codebase for the enhanced web server with multithreading and fund transfer handling. Submit a zip file. Make sure to remove any compiled code.
+
+
 #### Design Report: 
 Offer a report detailing your multithreading strategy, your synchronization strategies implemented and how they address potential issues. Include any testing or scenarios you used to validate the correctness of your implementation.
