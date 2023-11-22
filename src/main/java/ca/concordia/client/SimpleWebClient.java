@@ -5,7 +5,7 @@ import java.net.*;
 
 public class SimpleWebClient {
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         try {
             // Establish a connection to the server
             Socket socket = new Socket("localhost", 5000);
@@ -45,7 +45,7 @@ public class SimpleWebClient {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
