@@ -1,4 +1,22 @@
-## Programming Assignment #2 : A Web Server for Bank Transfers
+## Add Multithreading
+:white_check_mark: Basic implementation of multithreading
+
+Need to remove the "synchronized" parts. The assignment says we cannot use them.
+
+## Fund Transfer Functionality
+Create an Account class
+
+Go through the account.txt file and create an account object for each entry
+
+Create a list of accounts
+
+Inside the ClientServiceThread class, create a transferFund() method that is called inside handlePostRequest()
+
+Transfer the funds in a synchronized manner
+
+
+
+# Programming Assignment #2 : A Web Server for Bank Transfers
 
 In this project, you will be developing a concurrent web server to handle transfers between bank accounts. We are providing a simple Java Server that operates with a single thread. Your task is to enhance this server by making it multithreaded and adding functionality to handle fund transfers between accounts. You will also need to identify and address potential synchronization problems and deadlock scenarios.
 
