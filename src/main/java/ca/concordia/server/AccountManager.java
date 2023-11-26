@@ -2,7 +2,9 @@ package ca.concordia.server;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,16 @@ public class AccountManager {
         }
 
         return loadedAccounts;
+    }
+
+    public void writeAccountsToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("accounts.txt"))) {
+            for (Account account : accounts) {
+                writer.println(account.getID() + ", " + account.getBalance());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getBalance(int accountId) {
