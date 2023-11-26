@@ -23,7 +23,7 @@ Inside the ClientServiceThread class, create a transferFund() method that is cal
 
 :white_check_mark: Add a lock around editing the ClientServiceThread list (creation and removal)
 
-Add a lock around the transfering of funds
+Add a lock around the transferring of funds
 
 
 
