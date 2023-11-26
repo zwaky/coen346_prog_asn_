@@ -8,12 +8,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 //create the WebServer class to receive connections on port 5000. Each connection is handled by a master thread that puts the descriptor in a bounded buffer. A pool of worker threads take jobs from this buffer if there are any to handle the connection.
 public class WebServer {
 
     // Creates an array that will contain a list of all connected clients
     public static ArrayList<ClientServiceThread> Clients = new ArrayList<ClientServiceThread>();
+
+    // Lock to be used throughout the code
+    public static final ReentrantLock Clients_lock = new ReentrantLock();
 
     public void start() throws java.io.IOException {
 
@@ -37,10 +41,8 @@ public class WebServer {
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 OutputStream out = clientSocket.getOutputStream();
 
-                // TODO Cannot use synchronized. Find another way to stop Clients from being
-                // updated by multiple threads simultaneuously
-                synchronized (Clients) {
-
+                Clients_lock.lock();
+                try {
                     // Create a new ClientServiceThread object
                     ClientServiceThread newClient = new ClientServiceThread(clientSocket, Clients);
 
@@ -50,6 +52,8 @@ public class WebServer {
                     // Create a new thread for the ClientServiceThread object that will handle POST
                     // and GET requests
                     newClient.start();
+                } finally {
+                    Clients_lock.unlock();
                 }
 
             } catch (Exception ex) {
