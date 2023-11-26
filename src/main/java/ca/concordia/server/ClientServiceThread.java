@@ -65,10 +65,12 @@ public class ClientServiceThread extends Thread {
             System.out.println("Error closing the connection socket for client ");
         }
 
-        // TODO Cannot use synchronized. Find another way to stop Clients from being
-        // updated by multiple threads simultaneuously
-        synchronized (clients) {
+        WebServer.Clients_lock.lock();
+        try {
             clients.remove(this);
+        } finally {
+            WebServer.Clients_lock.unlock();
+
         }
     }
 
