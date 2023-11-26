@@ -1,7 +1,7 @@
 package ca.concordia.server;
 
 public class FundTransferProcessor {
-    private Account accountManager;
+    private AccountManager accountManager;
 
     public FundTransferProcessor(AccountManager accountManager) {
         this.accountManager = accountManager;

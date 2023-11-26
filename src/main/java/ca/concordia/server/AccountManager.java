@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountManager {
-    private static final String ACCOUNTS_FILE = "accounts.txt";
     private List<Account> accounts;
 
     public AccountManager() {
@@ -17,7 +16,7 @@ public class AccountManager {
     private List<Account> loadAccounts() {
         List<Account> loadedAccounts = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ACCOUNTS_FILE))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("accounts"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
@@ -53,7 +52,7 @@ public class AccountManager {
         }
     }
 
-    private Account findAccountById(int accountId) {
+    public Account findAccountById(int accountId) {
         for (Account account : accounts) {
             if (account.getID() == accountId) {
                 return account;
