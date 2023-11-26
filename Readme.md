@@ -1,18 +1,32 @@
-## Add Multithreading
-:white_check_mark: Basic implementation of multithreading
+## Multithreading
+:white_check_mark: Basic implementation of multithreading using Threads
 
-Need to remove the "synchronized" parts. The assignment says we cannot use them.
+:white_check_mark: Create a ClientServiceThread object to handle post and get requests
+
+:white_check_mark: Create a list of all the connected clients (ClientServiceThread objects)
+
+
 
 ## Fund Transfer Functionality
-Create an Account class
+:white_check_mark: Create an Account class
 
-Go through the account.txt file and create an account object for each entry
+:white_check_mark: Go through the account.txt file and create an account object for each entry
 
-Create a list of accounts
+:white_check_mark: Create a list of accounts
 
 Inside the ClientServiceThread class, create a transferFund() method that is called inside handlePostRequest()
 
-Transfer the funds in a synchronized manner
+
+## Protections against Race Conditions and Deadlocks
+
+:white_check_mark: Need to remove the "synchronized" parts. The assignment says we cannot use them. Implement using Reentrantlock
+
+:white_check_mark: Add a lock around editing the ClientServiceThread list (creation and removal)
+
+Add a lock around the transfering of funds
+
+
+
 
 
 
