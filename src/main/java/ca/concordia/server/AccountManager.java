@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountManager {
-    private List<Account> accounts;
+    public List<Account> accounts;
 
     public AccountManager() {
         this.accounts = loadAccounts();
@@ -36,7 +36,7 @@ public class AccountManager {
     }
 
     public void writeAccountsToFile() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter("accounts.txt"))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("accounts"))) {
             for (Account account : accounts) {
                 writer.println(account.getID() + ", " + account.getBalance());
             }
@@ -71,10 +71,5 @@ public class AccountManager {
             }
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        AccountManager accountManager = new AccountManager();
-        // Use accountManager methods to interact with accounts
     }
 }

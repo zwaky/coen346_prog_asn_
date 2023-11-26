@@ -63,12 +63,77 @@ public class WebServer {
         }
     }
 
+    private String processRequest(String request) {
+        // Parse the request to extract relevant information
+        // For simplicity, let's assume a basic format where the request contains details of the fund transfer
+
+        // Example request format: "TRANSFER?sourceAccount=123&sourceValue=50&destinationAccount=456&destinationValue=50"
+
+        String[] requestParts = request.split("\\?");
+        if (requestParts.length != 2) {
+            return "Invalid request";
+        }
+
+        String command = requestParts[0];
+        String params = requestParts[1];
+
+        if ("TRANSFER".equals(command)) {
+            String[] paramPairs = params.split("&");
+            int sourceAccount = 0, sourceValue = 0, destinationAccount = 0, destinationValue = 0;
+
+            for (String paramPair : paramPairs) {
+                String[] keyValue = paramPair.split("=");
+                if (keyValue.length == 2) {
+                    String key = keyValue[0];
+                    String value = keyValue[1];
+
+                    switch (key) {
+                        case "sourceAccount":
+                            sourceAccount = Integer.parseInt(value);
+                            break;
+                        case "sourceValue":
+                            sourceValue = Integer.parseInt(value);
+                            break;
+                        case "destinationAccount":
+                            destinationAccount = Integer.parseInt(value);
+                            break;
+                        case "destinationValue":
+                            destinationValue = Integer.parseInt(value);
+                            break;
+                    }
+                }
+            }
+
+            AccountManager accountManager = new AccountManager();
+            FundTransferProcessor transferProcessor = new FundTransferProcessor(accountManager);
+            boolean transferResult = transferProcessor.processTransfer(sourceAccount, sourceValue, destinationAccount, destinationValue);
+
+            if (transferResult) {
+                return "Transfer successful";
+            } else {
+                return "Transfer failed";
+            }
+        } else {
+            return "Invalid command";
+        }
+    }
+
     public static void main(String[] args) {
         // Start the server, if an exception occurs, print the stack trace
         WebServer server = new WebServer();
         try {
             server.start();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Example: Simulating processing a request after the server has started
+        String sampleRequest = "TRANSFER?sourceAccount=123&sourceValue=50&destinationAccount=456&destinationValue=50";
+        server.processRequest(sampleRequest);
+
+        // Optional: Add a delay or use a different mechanism to keep the program running
+        try {
+            Thread.sleep(5000); // Sleep for 5 seconds (adjust as needed)
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
