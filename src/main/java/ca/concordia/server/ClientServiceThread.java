@@ -155,64 +155,66 @@ public class ClientServiceThread extends Thread {
             }
         }
         // Process deposit and withdrawal
-        if (sourceAccountId != null && sourceValue != null && destinationAccountId != null && destinationValue != null) {
+        if (sourceAccountId != null && sourceValue != null && destinationAccountId != null) {
             int sourceAccountIdInt = Integer.parseInt(sourceAccountId);
             int sourceValueInt = Integer.parseInt(sourceValue);
             int destinationAccountIdInt = Integer.parseInt(destinationAccountId);
-            int destinationValueInt = Integer.parseInt(destinationValue);
-    
+            // int destinationValueInt = Integer.parseInt(destinationValue);
+
             AccountManager accountManager = new AccountManager();
 
-            if (sourceAccountId == destinationAccountId || accountManager.getBalance(sourceAccountIdInt) >= sourceValueInt)
-            {
+            if (sourceAccountId.equals(destinationAccountId) // Ensure you aren't sending to same account
+                    || accountManager.getBalance(sourceAccountIdInt) <= sourceValueInt // Ensure sufficient
+                    || accountManager.findAccountById(destinationAccountIdInt) == null // Make sure the account exists
+                    || accountManager.findAccountById(sourceAccountIdInt) == null // Make sure the account exists
+            ) {
                 // Invalid request
                 String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
-        
+
                 // Respond with an error message
                 String response = "HTTP/1.1 400 Bad Request\r\n" +
-                "Content-Length: " + responseContent.length() + "\r\n" +
-                "Content-Type: text/html\r\n\r\n" +
-                responseContent;
-        
+                        "Content-Length: " + responseContent.length() + "\r\n" +
+                        "Content-Type: text/html\r\n\r\n" +
+                        responseContent;
+
+                out.write(response.getBytes());
+                out.flush();
+            } else {
+                // Withdraw from source account
+                accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
+
+                // Deposit to destination account
+                accountManager.deposit(destinationAccountIdInt, sourceValueInt);
+
+                // Save account changes to file
+                accountManager.saveAccountsToFile();
+
+                // Create the response
+                String responseContent = "<html><body><h1>Transaction Successful</h1>" +
+                        "<p>Withdrawn from Account " + sourceAccountIdInt + ": " + sourceValueInt + "</p>" +
+                        "<p>Deposited to Account " + destinationAccountIdInt + ": " + sourceValueInt + "</p>" +
+                        "</body></html>";
+
+                // Respond with the transaction details
+                String response = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Length: " + responseContent.length() + "\r\n" +
+                        "Content-Type: text/html\r\n\r\n" +
+                        responseContent;
+
                 out.write(response.getBytes());
                 out.flush();
             }
-            else {
-                // Withdraw from source account
-                accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
-        
-                // Deposit to destination account
-                accountManager.deposit(destinationAccountIdInt, destinationValueInt);
-        
-                // Save account changes to file
-                accountManager.saveAccountsToFile();
-        
-                // Create the response
-                String responseContent = "<html><body><h1>Transaction Successful</h1>" +
-                "<p>Withdrawn from Account " + sourceAccountIdInt + ": " + sourceValueInt + "</p>" +
-                "<p>Deposited to Account " + destinationAccountIdInt + ": " + destinationValueInt + "</p>" +
-                "</body></html>";
-        
-                // Respond with the transaction details
-                String response = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Length: " + responseContent.length() + "\r\n" +
-                    "Content-Type: text/html\r\n\r\n" +
-                    responseContent;
-    
-                out.write(response.getBytes());
-                out.flush();
-            }    
-            
+
         } else {
             // Invalid request
             String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
-    
+
             // Respond with an error message
             String response = "HTTP/1.1 400 Bad Request\r\n" +
-            "Content-Length: " + responseContent.length() + "\r\n" +
-            "Content-Type: text/html\r\n\r\n" +
-            responseContent;
-    
+                    "Content-Length: " + responseContent.length() + "\r\n" +
+                    "Content-Type: text/html\r\n\r\n" +
+                    responseContent;
+
             out.write(response.getBytes());
             out.flush();
         }

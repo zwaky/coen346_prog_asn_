@@ -1,4 +1,4 @@
-/* package ca.concordia.client;
+package ca.concordia.client;
 
 import java.io.*;
 import java.net.*;
@@ -17,7 +17,7 @@ public class SimpleWebClient {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
             // Prepare the POST request with form data
-            String postData = "account=1234&value=1000&toAccount=5678&toValue=500";
+            String postData = "account=123&value=1000&toAccount=3458&toValue=500";
             Thread.sleep(60000);
             // Send the POST request
             writer.println("POST /submit HTTP/1.1");
@@ -50,4 +50,3 @@ public class SimpleWebClient {
         }
     }
 }
- */
