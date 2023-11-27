@@ -5,43 +5,56 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
 
 public class AccountManager {
-    public List<Account> accounts;
+    private static final Logger LOGGER = Logger.getLogger(AccountManager.class.getName());
+    private List<Account> accounts;
+    private final Lock lock = new ReentrantLock();
+
 
     public AccountManager() {
-        this.accounts = loadAccounts();
+        this.accounts = new CopyOnWriteArrayList<>();
+        loadAccounts();
     }
 
-    private List<Account> loadAccounts() {
-        List<Account> loadedAccounts = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader("accounts"))) {
+    private void loadAccounts() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 2) {
-                    int accountId = Integer.parseInt(parts[0].trim());
-                    int balance = Integer.parseInt(parts[1].trim());
-                    loadedAccounts.add(new Account(balance, accountId));
+                try {
+                    String[] parts = line.split(",");
+                    if (parts.length == 2) {
+                        int accountId = Integer.parseInt(parts[0].trim());
+                        int balance = Integer.parseInt(parts[1].trim());
+                        accounts.add(new Account(balance, accountId));
+                    }
+                } catch (NumberFormatException e) {
+                    LOGGER.log(Level.SEVERE, "Error parsing account data: " + line, e);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading accounts file", e);
         }
-
-        return loadedAccounts;
     }
 
-    public void writeAccountsToFile() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter("accounts"))) {
-            for (Account account : accounts) {
-                writer.println(account.getID() + ", " + account.getBalance());
+    public void saveAccountsToFile() {
+        lock.lock();
+        try {
+            try (PrintWriter writer = new PrintWriter(new FileWriter("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
+                for (Account account : accounts) {
+                    writer.println(account.getID() + "," + account.getBalance());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Error writing accounts to file", e);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 

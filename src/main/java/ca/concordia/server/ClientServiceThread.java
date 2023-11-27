@@ -130,7 +130,7 @@ public class ClientServiceThread extends Thread {
         System.out.println(requestBody.toString());
         // Parse the request body as URL-encoded parameters
         String[] params = requestBody.toString().split("&");
-        String account = null, value = null, toAccount = null, toValue = null;
+        String sourceAccountId = null, sourceValue = null, destinationAccountId = null, destinationValue = null;
 
         for (String param : params) {
             String[] parts = param.split("=");
@@ -140,28 +140,32 @@ public class ClientServiceThread extends Thread {
 
                 switch (key) {
                     case "account":
-                        account = val;
+                        sourceAccountId = val;
                         break;
                     case "value":
-                        value = val;
+                        sourceValue = val;
                         break;
                     case "toAccount":
-                        toAccount = val;
+                        destinationAccountId = val;
                         break;
                     case "toValue":
-                        toValue = val;
+                        destinationValue = val;
                         break;
                 }
             }
         }
+        
+        AccountManager accountManager = new AccountManager();
+        accountManager.saveAccountsToFile();
+        
 
         // Create the response
         String responseContent = "<html><body><h1>Thank you for using Concordia Transfers</h1>" +
                 "<h2>Received Form Inputs:</h2>" +
-                "<p>Account: " + account + "</p>" +
-                "<p>Value: " + value + "</p>" +
-                "<p>To Account: " + toAccount + "</p>" +
-                "<p>To Value: " + toValue + "</p>" +
+                "<p>Account: " + sourceAccountId + "</p>" +
+                "<p>Value: " + sourceValue + "</p>" +
+                "<p>To Account: " + destinationAccountId + "</p>" +
+                "<p>To Value: " + destinationValue + "</p>" +
                 "</body></html>";
 
         // Respond with the received form inputs
