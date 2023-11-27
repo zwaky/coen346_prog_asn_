@@ -1,4 +1,4 @@
-package ca.concordia.client;
+/* package ca.concordia.client;
 
 import java.io.*;
 import java.net.*;
@@ -50,3 +50,4 @@ public class SimpleWebClient {
         }
     }
 }
+ */

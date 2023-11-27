@@ -68,8 +68,9 @@ public class WebServer {
         WebServer server = new WebServer();
         try {
             server.start();
+            
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }      
     }
 }
