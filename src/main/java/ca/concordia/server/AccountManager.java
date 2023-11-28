@@ -9,14 +9,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Lock;
 
 public class AccountManager {
     private static final Logger LOGGER = Logger.getLogger(AccountManager.class.getName());
     private List<Account> accounts;
-    private final Lock lock = new ReentrantLock();
-
 
     public AccountManager() {
         this.accounts = new CopyOnWriteArrayList<>();
@@ -24,7 +20,8 @@ public class AccountManager {
     }
 
     private void loadAccounts() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
+        try (BufferedReader reader = new BufferedReader(
+                new FileReader("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 try {
@@ -44,18 +41,15 @@ public class AccountManager {
     }
 
     public void saveAccountsToFile() {
-        lock.lock();
-        try {
-            try (PrintWriter writer = new PrintWriter(new FileWriter("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
-                for (Account account : accounts) {
-                    writer.println(account.getID() + "," + account.getBalance());
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Error writing accounts to file", e);
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter("src\\main\\java\\ca\\concordia\\server\\accounts"))) {
+            for (Account account : accounts) {
+                writer.println(account.getID() + "," + account.getBalance());
             }
-        } finally {
-            lock.unlock();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error writing accounts to file", e);
         }
+
     }
 
     public int getBalance(int accountId) {

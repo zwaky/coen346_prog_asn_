@@ -3,12 +3,15 @@ package ca.concordia.server;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientServiceThread extends Thread {
     private Socket connectionSocket; // Client's connection socket
     private ArrayList<ClientServiceThread> clients; // List of all clients connected to the server. Do we really want
                                                     // this? Privacy?
     private DataOutputStream outToClient;
+    private final static Lock lock = new ReentrantLock();
 
     public ClientServiceThread(Socket connectionSocket, ArrayList<ClientServiceThread> clients) {
         this.connectionSocket = connectionSocket;
@@ -161,33 +164,48 @@ public class ClientServiceThread extends Thread {
             int destinationAccountIdInt = Integer.parseInt(destinationAccountId);
             // int destinationValueInt = Integer.parseInt(destinationValue);
 
-            AccountManager accountManager = new AccountManager();
+            // Need to lock starting here to ensure each client gets the latest version
+            // of the accounts file
+            lock.lock();
+            try {
 
-            if (sourceAccountId.equals(destinationAccountId) // Ensure you aren't sending to same account
-                    || accountManager.getBalance(sourceAccountIdInt) <= sourceValueInt // Ensure sufficient
-                    || accountManager.findAccountById(destinationAccountIdInt) == null // Make sure the account exists
-                    || accountManager.findAccountById(sourceAccountIdInt) == null // Make sure the account exists
-            ) {
-                // Invalid request
-                String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
-                // Respond with an error message
-                String response = "HTTP/1.1 400 Bad Request\r\n" +
-                        "Content-Length: " + responseContent.length() + "\r\n" +
-                        "Content-Type: text/html\r\n\r\n" +
-                        responseContent;
+                AccountManager accountManager = new AccountManager();
 
-                out.write(response.getBytes());
-                out.flush();
-            } else {
-                // Withdraw from source account
-                accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
+                if (sourceAccountId.equals(destinationAccountId) // Ensure you aren't sending to same account
+                        || accountManager.getBalance(sourceAccountIdInt) <= sourceValueInt // Ensure sufficient
+                        || accountManager.findAccountById(destinationAccountIdInt) == null // Make sure the account
+                                                                                           // exists
+                        || accountManager.findAccountById(sourceAccountIdInt) == null // Make sure the account exists
+                ) {
+                    // Invalid request
+                    String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
 
-                // Deposit to destination account
-                accountManager.deposit(destinationAccountIdInt, sourceValueInt);
+                    // Respond with an error message
+                    String response = "HTTP/1.1 400 Bad Request\r\n" +
+                            "Content-Length: " + responseContent.length() + "\r\n" +
+                            "Content-Type: text/html\r\n\r\n" +
+                            responseContent;
 
-                // Save account changes to file
-                accountManager.saveAccountsToFile();
+                    out.write(response.getBytes());
+                    out.flush();
+                } else {
+                    // Withdraw from source account
+                    accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
+
+                    // Deposit to destination account
+                    accountManager.deposit(destinationAccountIdInt, sourceValueInt);
+
+                    // Save account changes to file
+                    accountManager.saveAccountsToFile();
+                }
+            } finally {
+                lock.unlock();
 
                 // Create the response
                 String responseContent = "<html><body><h1>Transaction Successful</h1>" +
