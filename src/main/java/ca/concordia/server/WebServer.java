@@ -6,15 +6,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 //create the WebServer class to receive connections on port 5000. Each connection is handled by a master thread that puts the descriptor in a bounded buffer. A pool of worker threads take jobs from this buffer if there are any to handle the connection.
 public class WebServer {
-
-    // Creates an array that will contain a list of all connected clients
-    public static ArrayList<ClientServiceThread> Clients = new ArrayList<ClientServiceThread>();
 
     // Lock to be used throughout the code
     public static final ReentrantLock Clients_lock = new ReentrantLock();
@@ -41,20 +36,12 @@ public class WebServer {
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 OutputStream out = clientSocket.getOutputStream();
 
-                Clients_lock.lock();
-                try {
-                    // Create a new ClientServiceThread object
-                    ClientServiceThread newClient = new ClientServiceThread(clientSocket, Clients);
+                // Create a new ClientServiceThread object
+                ClientServiceThread newClient = new ClientServiceThread(clientSocket);
 
-                    // Add it to the list of clients
-                    Clients.add(newClient);
-
-                    // Create a new thread for the ClientServiceThread object that will handle POST
-                    // and GET requests
-                    newClient.start();
-                } finally {
-                    Clients_lock.unlock();
-                }
+                // Create a new thread for the ClientServiceThread object that will handle POST
+                // and GET requests
+                newClient.start();
 
             } catch (Exception ex) {
                 System.out.println("Error accepting client connection: " + ex.getMessage());
@@ -68,9 +55,9 @@ public class WebServer {
         WebServer server = new WebServer();
         try {
             server.start();
-            
+
         } catch (IOException e) {
             e.printStackTrace();
-        }      
+        }
     }
 }

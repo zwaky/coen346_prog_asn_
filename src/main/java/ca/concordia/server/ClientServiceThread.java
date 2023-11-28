@@ -2,20 +2,17 @@ package ca.concordia.server;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientServiceThread extends Thread {
     private Socket connectionSocket; // Client's connection socket
-    private ArrayList<ClientServiceThread> clients; // List of all clients connected to the server. Do we really want
-                                                    // this? Privacy?
     private DataOutputStream outToClient;
     private final static Lock lock = new ReentrantLock();
 
-    public ClientServiceThread(Socket connectionSocket, ArrayList<ClientServiceThread> clients) {
+    public ClientServiceThread(Socket connectionSocket) {
         this.connectionSocket = connectionSocket;
-        this.clients = clients;
         try {
             this.outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
@@ -66,14 +63,6 @@ public class ClientServiceThread extends Thread {
             connectionSocket.close();
         } catch (IOException e) {
             System.out.println("Error closing the connection socket for client ");
-        }
-
-        WebServer.Clients_lock.lock();
-        try {
-            clients.remove(this);
-        } finally {
-            WebServer.Clients_lock.unlock();
-
         }
     }
 
@@ -166,61 +155,79 @@ public class ClientServiceThread extends Thread {
 
             // Need to lock starting here to ensure each client gets the latest version
             // of the accounts file
-            lock.lock();
             try {
+                if (lock.tryLock(10, TimeUnit.SECONDS)) { // Attempts to acquire lock. Timeout after 10 secs
+                    try {
 
-                try {
-                    Thread.sleep(60000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                        // Load the accounts from the txt file
+                        AccountManager accountManager = new AccountManager();
 
-                AccountManager accountManager = new AccountManager();
+                        if (sourceAccountId.equals(destinationAccountId) // Ensure you aren't sending to same account
+                                || accountManager.getBalance(sourceAccountIdInt) <= sourceValueInt // Ensure sufficient
+                                || accountManager.findAccountById(destinationAccountIdInt) == null // Make sure the
+                                                                                                   // account
+                                                                                                   // exists
+                                || accountManager.findAccountById(sourceAccountIdInt) == null // Make sure the account
+                                                                                              // exists
+                        ) {
+                            // Invalid request
+                            String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
 
-                if (sourceAccountId.equals(destinationAccountId) // Ensure you aren't sending to same account
-                        || accountManager.getBalance(sourceAccountIdInt) <= sourceValueInt // Ensure sufficient
-                        || accountManager.findAccountById(destinationAccountIdInt) == null // Make sure the account
-                                                                                           // exists
-                        || accountManager.findAccountById(sourceAccountIdInt) == null // Make sure the account exists
-                ) {
-                    // Invalid request
-                    String responseContent = "<html><body><h1>Invalid Request</h1></body></html>";
+                            // Respond with an error message
+                            String response = "HTTP/1.1 400 Bad Request\r\n" +
+                                    "Content-Length: " + responseContent.length() + "\r\n" +
+                                    "Content-Type: text/html\r\n\r\n" +
+                                    responseContent;
+
+                            out.write(response.getBytes());
+                            out.flush();
+                        } else {
+                            // Withdraw from source account
+                            accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
+
+                            // Deposit to destination account
+                            accountManager.deposit(destinationAccountIdInt, sourceValueInt);
+
+                            // Save account changes to file
+                            accountManager.saveAccountsToFile();
+                        }
+                    } finally {
+                        lock.unlock();
+
+                        // Create the response
+                        String responseContent = "<html><body><h1>Transaction Successful</h1>" +
+                                "<p>Withdrawn from Account " + sourceAccountIdInt + ": " + sourceValueInt + "</p>" +
+                                "<p>Deposited to Account " + destinationAccountIdInt + ": " + sourceValueInt + "</p>" +
+                                "</body></html>";
+
+                        // Respond with the transaction details
+                        String response = "HTTP/1.1 200 OK\r\n" +
+                                "Content-Length: " + responseContent.length() + "\r\n" +
+                                "Content-Type: text/html\r\n\r\n" +
+                                responseContent;
+
+                        out.write(response.getBytes());
+                        out.flush();
+                    }
+                } else {
+                    // Timeout has occured
+                    String responseContent = "<html><body><h1>Error Request Timeout</h1></body></html>";
 
                     // Respond with an error message
-                    String response = "HTTP/1.1 400 Bad Request\r\n" +
+                    String response = "HTTP/1.1 408 Request Timeout\r\n" +
                             "Content-Length: " + responseContent.length() + "\r\n" +
                             "Content-Type: text/html\r\n\r\n" +
                             responseContent;
 
                     out.write(response.getBytes());
                     out.flush();
-                } else {
-                    // Withdraw from source account
-                    accountManager.withdraw(sourceAccountIdInt, sourceValueInt);
 
-                    // Deposit to destination account
-                    accountManager.deposit(destinationAccountIdInt, sourceValueInt);
-
-                    // Save account changes to file
-                    accountManager.saveAccountsToFile();
                 }
-            } finally {
-                lock.unlock();
-
-                // Create the response
-                String responseContent = "<html><body><h1>Transaction Successful</h1>" +
-                        "<p>Withdrawn from Account " + sourceAccountIdInt + ": " + sourceValueInt + "</p>" +
-                        "<p>Deposited to Account " + destinationAccountIdInt + ": " + sourceValueInt + "</p>" +
-                        "</body></html>";
-
-                // Respond with the transaction details
-                String response = "HTTP/1.1 200 OK\r\n" +
-                        "Content-Length: " + responseContent.length() + "\r\n" +
-                        "Content-Type: text/html\r\n\r\n" +
-                        responseContent;
-
-                out.write(response.getBytes());
-                out.flush();
+            } catch (InterruptedException e) {
+                // Handle the InterruptedException
+                // This could be logging or re-throwing as a RuntimeException, depending on your
+                // application's needs
+                e.printStackTrace(); // Example: print the stack trace
             }
 
         } else {
