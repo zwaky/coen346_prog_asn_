@@ -97,9 +97,9 @@ public class ClientServiceThread extends Thread {
                 "\n" +
                 "        <label for=\"toAccount\">To Account:</label>\n" +
                 "        <input type=\"text\" id=\"toAccount\" name=\"toAccount\"><br><br>\n" +
-                "\n" +
+                /* "\n" +
                 "        <label for=\"toValue\">To Value:</label>\n" +
-                "        <input type=\"text\" id=\"toValue\" name=\"toValue\"><br><br>\n" +
+                "        <input type=\"text\" id=\"toValue\" name=\"toValue\"><br><br>\n" + */ // Not needed
                 "\n" +
                 "        <input type=\"submit\" value=\"Submit\">\n" +
                 "    </form>\n" +

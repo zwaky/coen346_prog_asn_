@@ -59,7 +59,6 @@ public class WebServer {
             } catch (Exception ex) {
                 System.out.println("Error accepting client connection: " + ex.getMessage());
             }
-
         }
     }
 
