@@ -6,6 +6,13 @@ import java.net.*;
 public class SimpleWebClient {
 
     public static void main(String[] args) {
+
+        for (int i = 0; i <= 1000; i++) {
+            new Thread(() -> manythreads()).start();
+        }
+    }
+
+    private static void manythreads() {
         try {
             // Establish a connection to the server
             Socket socket = new Socket("localhost", 5000);
@@ -17,8 +24,8 @@ public class SimpleWebClient {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
             // Prepare the POST request with form data
-            String postData = "account=123&value=1000&toAccount=3458&toValue=500";
-            Thread.sleep(60000);
+            String postData = "account=123&value=1&toAccount=345&toValue=50";
+            Thread.sleep(10000);
             // Send the POST request
             writer.println("POST /submit HTTP/1.1");
             writer.println("Host: localhost:8080");
