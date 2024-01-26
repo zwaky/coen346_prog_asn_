@@ -34,6 +34,7 @@ public class SimpleWebClient {
             writer.println();
             writer.println(postData);
             writer.flush();
+            //change
 
             // Create an input stream to read the response
             InputStream in = socket.getInputStream();
